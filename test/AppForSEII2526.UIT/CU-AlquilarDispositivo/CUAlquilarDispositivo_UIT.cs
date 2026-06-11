@@ -40,7 +40,7 @@ namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
         private const string devicePriceForRenting3 = "75.80000305175781";
         private const int deviceYear3 = 2023;
         private const string deviceColor3 = "White";
-
+        */
 
         private const string deviceName4 = "Galaxy S23";
         private const string deviceBrand4 = "Samsung";
@@ -49,7 +49,7 @@ namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
         private const int deviceYear4 = 2023;
         private const string deviceColor4 = "White";
 
-
+        /*
         private const string deviceName5 = "Surface Pro 9";
         private const string deviceBrand5 = "Microsoft";
         private const string deviceModel5 = "Surface Pro 9";
@@ -76,9 +76,88 @@ namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
         }
 
 
+        //MODIFICACION EXTRAORDINARIO
+
+        [Fact]
+        [Trait("LevelTesting", "Funcional Testing")]
+        public void extraordinario()
+        {
+            // Arrange
+            var from = DateTime.Today.AddDays(1);
+            var to = DateTime.Today.AddDays(2);
+
+            var createRental = new CreateRental_PO(_driver, _output);
+            var detailRental = new DetailRental_PO(_driver, _output);
+
+            InitialStepsForRentalDevices_UIT();
+
+            // 1. Filtrar por modelo y añadir iPhone 15
+            listDevices.FilterDevices("iPhone", "", from, to);
+            listDevices.SelectDevices(new List<string> { "iPhone 15" });
+
+            // Limpiar filtro
+            _driver.Navigate().GoToUrl(_URI + "rental/SelectDevicesForRental");
+            listDevices.WaitForBeingVisibleIgnoringExeptionTypes(By.Id("searchDevices"));
+
+            // 2. Filtrar por modelo y añadir Galaxy S23
+            listDevices.FilterDevices("Galaxy", "", from, to);
+            listDevices.SelectDevices(new List<string> { "Galaxy S23" });
+
+            // Limpiar filtro
+            _driver.Navigate().GoToUrl(_URI + "rental/SelectDevicesForRental");
+            listDevices.WaitForBeingVisibleIgnoringExeptionTypes(By.Id("searchDevices"));
+
+            // 3. Filtrar por precio y añadir PlayStation 5
+            listDevices.FilterDevices("", "120,75", from, to);
+            listDevices.SelectDevices(new List<string> { "PlayStation 5" });
+
+            // Limpiar filtro
+            _driver.Navigate().GoToUrl(_URI + "rental/SelectDevicesForRental");
+            listDevices.WaitForBeingVisibleIgnoringExeptionTypes(By.Id("searchDevices"));
+
+            //4. Eliminar del carrito
+            listDevices.ModifyRentingCart("iPhone 15");
+            listDevices.ModifyRentingCart("Galaxy S23");
+
+            // 4. Completar el flujo de alquiler
+            listDevices.RentDevices();
+
+            createRental.FillInRentalInfo("maria@alu.uclm.es", "Maria", "Calle Libertad 9", "CreditCard");
+            createRental.PressRentYourDevices();
+            createRental.PressOkModalDialog();
+
+            //Assert
+            // Calculamos el precio 
+            decimal totalPrice = decimal.Parse(devicePriceForRenting2, System.Globalization.CultureInfo.InvariantCulture) * (to - from).Days;
+
+            Assert.True(detailRental.CheckRentalDetail("Maria", "Calle Libertad 9", "CreditCard",
+                DateTime.Now, from, to, totalPrice.ToString("0.00").Replace('.', ',') + " €"),
+                "Error: El detalle del alquiler no es el esperado");
+
+            var expectedRentalItems = new List<string[]>
+            {
+                new string[] { deviceName2, deviceBrand2, deviceModel2, devicePriceForRenting2.Replace('.', ',') + " €", "1" },
+
+            };
+
+            Assert.True(detailRental.CheckListOfDevices(expectedRentalItems),
+                "Error: Los items del alquiler no son los correctos");
+
+        }
 
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
         ///MODIFICACION SPRINT 3///
         [Fact]
         [Trait("LevelTesting", "Funcional Testing")]
